@@ -1,0 +1,29 @@
+# Node dependencies
+client/node_modules/
+server/node_modules/
+
+# Environment variables
+.env
+*.env
+.env.local
+.env.development.local
+.env.production.local
+
+# Build outputs
+client/build/
+server/build/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+
+# Coverage reports
+coverage/
+
+# Misc
+.pnp
+.pnp.js
