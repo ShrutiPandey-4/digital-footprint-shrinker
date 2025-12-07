@@ -1,21 +1,45 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+
 
 export default function Login() {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    setSuccess("");
 
     if (!email || !password) {
       setError("Please enter both email and password");
       return;
     }
 
-    setError("");
-    console.log("Login with:", { email, password });
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.message);
+      } else {
+        navigate("/dashboard");
+        console.log("Logged in USER:", data.user);
+        // TODO: Redirect to Dashboard later
+      }
+
+    } catch (err) {
+      setError("Server error. Try again later.");
+    }
   };
 
   return (
@@ -28,6 +52,12 @@ export default function Login() {
         {error && (
           <div className="mb-4 bg-red-100 text-red-700 px-3 py-2 rounded-md text-sm">
             {error}
+          </div>
+        )}
+
+        {success && (
+          <div className="mb-4 bg-green-100 text-green-700 px-3 py-2 rounded-md text-sm">
+            {success}
           </div>
         )}
 
