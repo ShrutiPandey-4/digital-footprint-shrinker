@@ -27,3 +27,7 @@ coverage/
 # Misc
 .pnp
 .pnp.js
+
+#password
+.env
+server/.env

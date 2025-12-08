@@ -1,7 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
-
+import { Link, useNavigate } from "react-router-dom";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -10,6 +8,7 @@ export default function Login() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
+  //  FINAL handleSubmit (USE THIS)
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -32,9 +31,14 @@ export default function Login() {
       if (!response.ok) {
         setError(data.message);
       } else {
+        // Save Token
+        localStorage.setItem("token", data.token);
+
+        // Success Message
+        setSuccess("Login successful!");
+
+        // Redirect to Dashboard
         navigate("/dashboard");
-        console.log("Logged in USER:", data.user);
-        // TODO: Redirect to Dashboard later
       }
 
     } catch (err) {

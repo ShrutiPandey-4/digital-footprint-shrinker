@@ -1,62 +1,79 @@
 const express = require("express");
 const User = require("./user.model");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
 const router = express.Router();
 
-// SIGNUP API
+// ================== SIGNUP ==================
 router.post("/signup", async (req, res) => {
   try {
     const { fullName, email, password } = req.body;
 
-    if (!fullName || !email || !password) {
+    if (!fullName || !email || !password)
       return res.status(400).json({ message: "All fields required" });
-    }
 
     const existing = await User.findOne({ email });
-    if (existing) {
-      return res.status(400).json({ message: "Email already registered" });
-    }
+    if (existing)
+      return res.status(400).json({ message: "Email already exists" });
 
-    const newUser = await User.create({ fullName, email, password });
+    // HASH PASSWORD
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    res.status(201).json({
-      message: "Signup successful",
-      user: newUser
+    await User.create({
+      fullName,
+      email,
+      password: hashedPassword,
     });
 
+    res.status(201).json({ message: "Signup successful" });
+
   } catch (err) {
-    res.status(500).json({ message: "Server error", error: err.message });
+    res.status(500).json({
+      message: "Signup error",
+      error: err.message
+    });
   }
 });
 
 
-// LOGIN API  
+// ================== LOGIN ==================
 router.post("/login", async (req, res) => {
-  const { email, password } = req.body;
-
   try {
+    const { email, password } = req.body;
+
     const user = await User.findOne({ email });
-
-    if (!user) {
+    if (!user)
       return res.status(400).json({ message: "User not found" });
-    }
 
-    // PASSWORD CHECK HERE
-    if (user.password !== password) {
+    // CHECK PASSWORD
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch)
       return res.status(400).json({ message: "Invalid password" });
-    }
+
+    // GENERATE JWT TOKEN
+    const token = jwt.sign(
+      { id: user._id, email: user.email },
+      "SECRET_KEY_123",     // Later ENV me dalenge
+      { expiresIn: "1d" }
+    );
 
     res.json({
       message: "Login successful",
-      user
+      token,
+      user: {
+        id: user._id,
+        fullName: user.fullName,
+        email: user.email
+      }
     });
 
   } catch (err) {
-    console.log("LOGIN ERROR:", err);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({
+      message: "Login error",
+      error: err.message
+    });
   }
 });
 
-
 module.exports = router;
-
