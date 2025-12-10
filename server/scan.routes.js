@@ -1,41 +1,49 @@
 const express = require("express");
-const router = express.Router();
-const Scan = require("./scan.model");
 const authMiddleware = require("./authMiddleware");
+const Scan = require("./scan.model");
 
-//RUN SCAN (save result)
-router.post("/run", authMiddleware, async (req, res) => {
+const router = express.Router();
+
+// ======================================
+// START SCAN (POST /api/scan/start)
+// ======================================
+router.post("/start", authMiddleware, async (req, res) => {
   try {
-    const userId = req.user.id;
-
-    // Simple random risk count (baad me logic improve kar sakte)
-    const risksFound = Math.floor(Math.random() * 4); // 0 to 3
-
-    const newScan = await Scan.create({
-      userId,
-      risksFound
+    const scan = await Scan.create({
+      userId: req.user.id,
+      risksFound: Math.floor(Math.random() * 5), // random risk count
+      date: new Date()
     });
 
-    res.json({
-      message: "Scan saved successfully",
-      scan: newScan
+    return res.status(201).json({
+      message: "Scan completed successfully",
+      scan
     });
   } catch (err) {
-    res.status(500).json({ message: "Error running scan", error: err.message });
+    return res.status(500).json({
+      message: "Scan failed",
+      error: err.message
+    });
   }
 });
 
-//GET HISTORY for logged-in user
+// ======================================
+// GET SCAN HISTORY (GET /api/scan/history)
+// ======================================
 router.get("/history", authMiddleware, async (req, res) => {
   try {
-    const userId = req.user.id;
+    const history = await Scan
+      .find({ userId: req.user.id })
+      .sort({ date: -1 });
 
-    const scans = await Scan.find({ userId }).sort({ createdAt: -1 });
-
-    res.json(scans);
+    return res.status(200).json(history);
   } catch (err) {
-    res.status(500).json({ message: "Error fetching history" });
+    return res.status(500).json({
+      message: "History fetch error",
+      error: err.message
+    });
   }
 });
 
 module.exports = router;
+

@@ -8,8 +8,8 @@ module.exports = function (req, res, next) {
   }
 
   try {
-    const decoded = jwt.verify(token, "SECRET_KEY_123");
-    req.user = decoded; // user info
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded; 
     next();
   } catch (err) {
     return res.status(401).json({ message: "Invalid Token" });

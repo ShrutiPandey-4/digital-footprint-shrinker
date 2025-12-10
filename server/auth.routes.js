@@ -54,7 +54,7 @@ router.post("/login", async (req, res) => {
     // GENERATE JWT TOKEN
     const token = jwt.sign(
       { id: user._id, email: user.email },
-      "SECRET_KEY_123",     // Later ENV me dalenge
+      process.env.JWT_SECRET,
       { expiresIn: "1d" }
     );
 
